@@ -1,5 +1,8 @@
-﻿using EnvDTE;
+﻿using Community.VisualStudio.Toolkit;
+using EnvDTE;
+using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
+using Microsoft.VisualStudio.Text.Editor;
 using System;
 using System.IO;
 using System.Linq;
@@ -10,7 +13,7 @@ using System.Windows.Forms;
 namespace VSNamePlusDate
 {
     [Command(PackageIds.NamePlusDateCommand)]
-    internal sealed class NamePlusDateCommand : BaseCommand
+    internal sealed class NamePlusDateCommand : BaseCommand<NamePlusDateCommand>
     {
         protected override async Task ExecuteAsync(OleMenuCmdEventArgs e)
         {
@@ -20,39 +23,62 @@ namespace VSNamePlusDate
 
             DocumentView? docView = await VS.Documents.GetActiveDocumentViewAsync();
 
-            if (docView?.TextView != null)
+            if (docView?.TextView != null && docView?.TextBuffer != null)
             {
-                SnapshotSpan? selection = docView.TextView.Selection.SelectedSpans.FirstOrDefault();
-
-                if (selection.HasValue)
-                {
-                    docView.TextBuffer.Replace(selection.Value, stamp);
-                }
-                else
-                {
-                    int position = docView.TextView.Caret.Position.BufferPosition.Position;
-                    docView.TextBuffer.Insert(position, stamp);
-                }
-
+                InsertIntoEditor(docView, stamp);
                 return;
             }
 
-            Clipboard.SetText(stamp);
+            CopyToClipboardAndPasteIntoGitChanges(stamp);
         }
 
-        private async Task<string> CreateStampAsync()
+        private static void InsertIntoEditor(DocumentView docView, string stamp)
+        {
+            IWpfTextView textView = docView.TextView;
+            ITextBuffer textBuffer = docView.TextBuffer;
+
+            SnapshotSpan? selection = textView.Selection.SelectedSpans.FirstOrDefault();
+
+            if (selection.HasValue && !selection.Value.IsEmpty)
+            {
+                textBuffer.Replace(selection.Value, stamp);
+                return;
+            }
+
+            int position = textView.Caret.Position.BufferPosition.Position;
+            textBuffer.Insert(position, stamp);
+        }
+
+        private static async void CopyToClipboardAndPasteIntoGitChanges(string stamp)
+        {
+            await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
+
+            Clipboard.SetText(stamp);
+
+            await VS.Commands.ExecuteAsync("View.GitChanges");
+
+            await Task.Delay(750);
+
+            SendKeys.SendWait("^v");
+        }
+
+        private static async Task<string> CreateStampAsync()
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             DTE? dte = await VS.GetServiceAsync<DTE, DTE>();
+
             string? filePath = dte?.ActiveDocument?.FullName;
             string? solutionPath = dte?.Solution?.FullName;
 
             if (string.IsNullOrWhiteSpace(filePath))
-                return $"VSNamePlusDate {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
+            {
+                string solutionName = GetSolutionName(solutionPath);
+
+                return $"{solutionName} {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
+            }
 
             string relativePath = GetRelativePath(solutionPath, filePath);
-
             relativePath = relativePath.Replace("/", "\\");
 
             string extension = Path.GetExtension(filePath).ToLowerInvariant();
@@ -61,15 +87,42 @@ namespace VSNamePlusDate
             {
                 ".razor" => $"@* {relativePath} *@",
                 ".cshtml" => $"@* {relativePath} *@",
+
                 ".html" => $"<!-- {relativePath} -->",
                 ".xml" => $"<!-- {relativePath} -->",
                 ".xaml" => $"<!-- {relativePath} -->",
+
                 ".css" => $"/* {relativePath} */",
+                ".scss" => $"/* {relativePath} */",
+                ".less" => $"/* {relativePath} */",
+
+                ".sql" => $"-- {relativePath}",
+
+                ".vb" => $"'{relativePath}",
+                ".ps1" => $"# {relativePath}",
+
                 ".js" => $"// {relativePath}",
                 ".ts" => $"// {relativePath}",
+                ".jsx" => $"// {relativePath}",
+                ".tsx" => $"// {relativePath}",
                 ".json" => $"// {relativePath}",
+                ".cs" => $"// {relativePath}",
+
                 _ => $"// {relativePath}"
             };
+        }
+
+        private static string GetSolutionName(string? solutionPath)
+        {
+            if (string.IsNullOrWhiteSpace(solutionPath))
+                return "Project";
+
+            string? name = Path.GetFileNameWithoutExtension(solutionPath);
+
+            if (string.IsNullOrWhiteSpace(name))
+                return "Project";
+
+            return name;
         }
 
         private static string GetRelativePath(string? solutionPath, string filePath)
@@ -92,10 +145,10 @@ namespace VSNamePlusDate
 
         private static string AppendDirectorySeparatorChar(string path)
         {
-            if (!path.EndsWith(Path.DirectorySeparatorChar.ToString()))
-                return path + Path.DirectorySeparatorChar;
+            if (path.EndsWith(Path.DirectorySeparatorChar.ToString()))
+                return path;
 
-            return path;
+            return path + Path.DirectorySeparatorChar;
         }
     }
 }
