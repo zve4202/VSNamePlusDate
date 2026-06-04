@@ -1,11 +1,13 @@
-﻿// Commands\CreateCommentCommand.csusing Community.VisualStudio.Toolkit;
+﻿// Commands\CreateCommentCommand.cs
+using Community.VisualStudio.Toolkit;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
 using Microsoft.VisualStudio.Text.Editor;
 using System;
 using System.IO;
-using System.Linq;
+using System.Runtime.InteropServices;
+using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
@@ -21,15 +23,18 @@ namespace VSExtension
 
             string stamp = await CreateStampAsync();
 
-            DocumentView? docView = await VS.Documents.GetActiveDocumentViewAsync();
-
-            if (docView?.TextView != null && docView?.TextBuffer != null)
+            if (IsFocusInCodeEditor())
             {
-                InsertIntoEditor(docView, stamp);
-                return;
+                DocumentView? docView = await VS.Documents.GetActiveDocumentViewAsync();
+
+                if (docView?.TextView != null && docView.TextBuffer != null)
+                {
+                    InsertIntoEditor(docView, stamp);
+                    return;
+                }
             }
 
-            CopyToClipboardAndPasteIntoGitChanges(stamp);
+            await PasteIntoFocusedControlAsync(stamp);
         }
 
         private static void InsertIntoEditor(DocumentView docView, string stamp)
@@ -37,31 +42,48 @@ namespace VSExtension
             IWpfTextView textView = docView.TextView;
             ITextBuffer textBuffer = docView.TextBuffer;
 
-            string textToInsert =
-                stamp +
-                Environment.NewLine +
-                Environment.NewLine;
+            string textToInsert = stamp + Environment.NewLine + Environment.NewLine;
 
             textBuffer.Insert(0, textToInsert);
 
             textView.Caret.MoveTo(
-                new SnapshotPoint(
-                    textBuffer.CurrentSnapshot,
-                    textToInsert.Length
-                )
+                new SnapshotPoint(textBuffer.CurrentSnapshot, textToInsert.Length)
             );
         }
-        private static async void CopyToClipboardAndPasteIntoGitChanges(string stamp)
+
+        private static async Task PasteIntoFocusedControlAsync(string stamp)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
 
             Clipboard.SetText(stamp);
 
-            await VS.Commands.ExecuteAsync("View.GitChanges");
-
-            await Task.Delay(750);
+            await Task.Delay(100);
 
             SendKeys.SendWait("^v");
+        }
+
+        private static bool IsFocusInCodeEditor()
+        {
+            IntPtr hwnd = GetFocus();
+
+            if (hwnd == IntPtr.Zero)
+                return false;
+
+            string className = GetWindowClassName(hwnd);
+
+            return className.Contains("WpfTextView", StringComparison.OrdinalIgnoreCase)
+                || className.Contains("VsTextEditPane", StringComparison.OrdinalIgnoreCase);
+        }
+
+        private static string GetWindowClassName(IntPtr hwnd)
+        {
+            const int maxCount = 256;
+
+            StringBuilder className = new(maxCount);
+
+            GetClassName(hwnd, className, maxCount);
+
+            return className.ToString();
         }
 
         private static async Task<string> CreateStampAsync()
@@ -76,7 +98,6 @@ namespace VSExtension
             if (string.IsNullOrWhiteSpace(filePath))
             {
                 string solutionName = GetSolutionName(solutionPath);
-
                 return $"{solutionName} {DateTime.Now:yyyy-MM-dd HH:mm:ss}";
             }
 
@@ -100,15 +121,15 @@ namespace VSExtension
 
                 ".sql" => $"-- {relativePath}",
 
-                ".vb" => $"'{relativePath}",
+                ".vb" => $"' {relativePath}",
                 ".ps1" => $"# {relativePath}",
 
+                ".cs" => $"// {relativePath}",
                 ".js" => $"// {relativePath}",
                 ".ts" => $"// {relativePath}",
                 ".jsx" => $"// {relativePath}",
                 ".tsx" => $"// {relativePath}",
                 ".json" => $"// {relativePath}",
-                ".cs" => $"// {relativePath}",
 
                 _ => $"// {relativePath}"
             };
@@ -121,10 +142,7 @@ namespace VSExtension
 
             string? name = Path.GetFileNameWithoutExtension(solutionPath);
 
-            if (string.IsNullOrWhiteSpace(name))
-                return "Project";
-
-            return name;
+            return string.IsNullOrWhiteSpace(name) ? "Project" : name;
         }
 
         private static string GetRelativePath(string? solutionPath, string filePath)
@@ -147,10 +165,15 @@ namespace VSExtension
 
         private static string AppendDirectorySeparatorChar(string path)
         {
-            if (path.EndsWith(Path.DirectorySeparatorChar.ToString()))
-                return path;
-
-            return path + Path.DirectorySeparatorChar;
+            return path.EndsWith(Path.DirectorySeparatorChar.ToString())
+                ? path
+                : path + Path.DirectorySeparatorChar; 
         }
+
+        [DllImport("user32.dll")]
+        private static extern IntPtr GetFocus();
+
+        [DllImport("user32.dll", CharSet = CharSet.Unicode)]
+        private static extern int GetClassName(IntPtr hWnd, StringBuilder lpClassName, int nMaxCount);
     }
 }
