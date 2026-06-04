@@ -1,4 +1,5 @@
-﻿using Community.VisualStudio.Toolkit;
+﻿// Commands\NamePlusDateCommand.cs// Commands\NamePlusDateCommand.cs
+using Community.VisualStudio.Toolkit;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
