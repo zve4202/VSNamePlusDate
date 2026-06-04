@@ -13,8 +13,8 @@
     <ProjectGuid>{7420BD9F-4F44-41BF-B8FB-BB1EC4478ACF}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>VSNamePlusDate</RootNamespace>
-    <AssemblyName>VSNamePlusDate</AssemblyName>
+    <RootNamespace>VSExtension</RootNamespace>
+    <AssemblyName>VSExtension</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <GeneratePkgDefFile>true</GeneratePkgDefFile>
     <UseCodebase>true</UseCodebase>
@@ -46,8 +46,8 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Commands\NamePlusDateCommand.cs" />
-    <Compile Include="VSNamePlusDatePackage.cs" />
+    <Compile Include="Commands\CreateCommentCommand.cs" />
+    <Compile Include="VSExtensionPackage.cs" />
     <Compile Include="source.extension.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

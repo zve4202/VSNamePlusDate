@@ -4,16 +4,16 @@
 //     Available from https://marketplace.visualstudio.com/items?itemName=MadsKristensen.VsixSynchronizer64
 // </auto-generated>
 // ------------------------------------------------------------------------------
-namespace VSNamePlusDate
+namespace VSExtension
 {
     internal sealed partial class Vsix
     {
-        public const string Id = "VSNamePlusDate.594f3931-1da9-4fe1-83cf-803dab09a528";
-        public const string Name = "VSNamePlusDate";
+        public const string Id = "VSExtension.594f3931-1da9-4fe1-83cf-803dab09a528";
+        public const string Name = "VSExtension";
         public const string Description = @"Empty VSIX Project.";
-        public const string Language = "ru-RU";
+        public const string Language = "en-US";
         public const string Version = "1.0";
-        public const string Author = "GH.Programmer";
+        public const string Author = "Company";
         public const string Tags = "";
         public const bool IsPreview = false;
     }

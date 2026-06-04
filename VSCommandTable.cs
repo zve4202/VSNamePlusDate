@@ -4,7 +4,7 @@
 //     Available from https://marketplace.visualstudio.com/items?itemName=MadsKristensen.VsixSynchronizer64
 // </auto-generated>
 // ------------------------------------------------------------------------------
-namespace VSNamePlusDate
+namespace VSExtension
 {
     using System;
 
@@ -13,8 +13,8 @@ namespace VSNamePlusDate
     /// </summary>
     internal sealed partial class PackageGuids
     {
-        public const string VSNamePlusDateString = "32bf848a-bd7e-4f10-9b06-9c9f9feb8e4a";
-        public static Guid VSNamePlusDate = new Guid(VSNamePlusDateString);
+        public const string VSExtensionString = "32bf848a-bd7e-4f10-9b06-9c9f9feb8e4a";
+        public static Guid VSExtension = new Guid(VSExtensionString);
     }
 
     /// <summary>
@@ -23,6 +23,6 @@ namespace VSNamePlusDate
     internal sealed partial class PackageIds
     {
         public const int GHMenuGroup = 0x0001;
-        public const int NamePlusDateCommand = 0x0100;
+        public const int CreateCommentCommand = 0x0100;
     }
 }

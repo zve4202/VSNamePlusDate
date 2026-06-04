@@ -5,13 +5,13 @@ global using Task = System.Threading.Tasks.Task;
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace VSNamePlusDate
+namespace VSExtension
 {
     [PackageRegistration(UseManagedResourcesOnly = true, AllowsBackgroundLoading = true)]
     [InstalledProductRegistration(Vsix.Name, Vsix.Description, Vsix.Version)]
     [ProvideMenuResource("Menus.ctmenu", 1)]
-    [Guid(PackageGuids.VSNamePlusDateString)]
-    public sealed class VSNamePlusDatePackage : ToolkitPackage
+    [Guid(PackageGuids.VSExtensionString)]
+    public sealed class VSExtensionPackage : ToolkitPackage
     {
         protected override async Task InitializeAsync(CancellationToken cancellationToken, IProgress<ServiceProgressData> progress)
         {

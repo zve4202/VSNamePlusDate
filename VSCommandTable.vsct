@@ -1,37 +1,46 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <CommandTable xmlns="http://schemas.microsoft.com/VisualStudio/2005-10-18/CommandTable" xmlns:xs="http://www.w3.org/2001/XMLSchema">
 
-  <Extern href="stdidcmd.h"/>
-  <Extern href="vsshlids.h"/>
-  <Include href="KnownImageIds.vsct"/>
-  <Include href="VSGlobals.vsct"/>
+	<Extern href="stdidcmd.h"/>
+	<Extern href="vsshlids.h"/>
+	<Include href="KnownImageIds.vsct"/>
+	<Include href="VSGlobals.vsct"/>
 
-  <Commands package="VSNamePlusDate">
-    <Groups>
-      <Group guid="VSNamePlusDate" id="GHMenuGroup" priority="0x0600">
-        <Parent guid="VSMainMenu" id="Edit"/>
-      </Group>
-    </Groups>
+	<Commands package="VSExtension">
+		<Groups>
+			<Group guid="VSExtension" id="GHMenuGroup" priority="0x0600">
+				<Parent guid="VSMainMenu" id="Edit"/>
+			</Group>
+		</Groups>
 
-    <!--This section defines the elements the user can interact with, like a menu command or a button
-        or combo box in a toolbar. -->
-    <Buttons>
-      <Button guid="VSNamePlusDate" id="NamePlusDateCommand" priority="0x0100" type="Button">
-        <Parent guid="VSNamePlusDate" id="GHMenuGroup" />
-			  <Icon guid="ImageCatalogGuid" id="PasteAppend" />
-        <CommandFlag>IconIsMoniker</CommandFlag>
-        <Strings>
-          <ButtonText>Insert (ProgectName + DateTime)</ButtonText>
-          <LocCanonicalName>Edit.NamePlusDate</LocCanonicalName>
-        </Strings>
-      </Button>
-    </Buttons>
-  </Commands>
+		<Buttons>
+			<Button guid="VSExtension" id="CreateCommentCommand" priority="0x0100" type="Button">
+				<Parent guid="VSExtension" id="GHMenuGroup" />
+				<Icon guid="ImageCatalogGuid" id="PasteAppend" />
+				<CommandFlag>IconIsMoniker</CommandFlag>
+				<Strings>
+					<ButtonText>Insert (ProjectName + DateTime)</ButtonText>
+					<LocCanonicalName>Edit.NamePlusDate</LocCanonicalName>
+				</Strings>
+			</Button>
+		</Buttons>
 
-  <Symbols>
-    <GuidSymbol name="VSNamePlusDate" value="{32bf848a-bd7e-4f10-9b06-9c9f9feb8e4a}">
-      <IDSymbol name="GHMenuGroup" value="0x0001" />
-      <IDSymbol name="NamePlusDateCommand" value="0x0100" />
-    </GuidSymbol>
-  </Symbols>
+	</Commands>
+
+	<KeyBindings>
+		<KeyBinding
+			guid="VSExtension"
+			id="CreateCommentCommand"
+			editor="guidVSStd97"
+			key1="D"
+			mod1="Control Shift"
+			key2="V"
+			mod2="Control Shift" />
+	</KeyBindings>
+	<Symbols>
+		<GuidSymbol name="VSExtension" value="{32bf848a-bd7e-4f10-9b06-9c9f9feb8e4a}">
+			<IDSymbol name="GHMenuGroup" value="0x0001" />
+			<IDSymbol name="CreateCommentCommand" value="0x0100" />
+		</GuidSymbol>
+	</Symbols>
 </CommandTable>

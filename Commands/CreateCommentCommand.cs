@@ -1,5 +1,4 @@
-﻿// Commands\NamePlusDateCommand.cs// Commands\NamePlusDateCommand.cs
-using Community.VisualStudio.Toolkit;
+﻿// Commands\CreateCommentCommand.csusing Community.VisualStudio.Toolkit;
 using EnvDTE;
 using Microsoft.VisualStudio.Shell;
 using Microsoft.VisualStudio.Text;
@@ -11,10 +10,10 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
 
-namespace VSNamePlusDate
+namespace VSExtension
 {
-    [Command(PackageIds.NamePlusDateCommand)]
-    internal sealed class NamePlusDateCommand : BaseCommand<NamePlusDateCommand>
+    [Command(PackageIds.CreateCommentCommand)]
+    internal sealed class CreateCommentCommand : BaseCommand<CreateCommentCommand>
     {
         protected override async Task ExecuteAsync(OleMenuCmdEventArgs e)
         {
@@ -38,18 +37,20 @@ namespace VSNamePlusDate
             IWpfTextView textView = docView.TextView;
             ITextBuffer textBuffer = docView.TextBuffer;
 
-            SnapshotSpan? selection = textView.Selection.SelectedSpans.FirstOrDefault();
+            string textToInsert =
+                stamp +
+                Environment.NewLine +
+                Environment.NewLine;
 
-            if (selection.HasValue && !selection.Value.IsEmpty)
-            {
-                textBuffer.Replace(selection.Value, stamp);
-                return;
-            }
+            textBuffer.Insert(0, textToInsert);
 
-            int position = textView.Caret.Position.BufferPosition.Position;
-            textBuffer.Insert(position, stamp);
+            textView.Caret.MoveTo(
+                new SnapshotPoint(
+                    textBuffer.CurrentSnapshot,
+                    textToInsert.Length
+                )
+            );
         }
-
         private static async void CopyToClipboardAndPasteIntoGitChanges(string stamp)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
