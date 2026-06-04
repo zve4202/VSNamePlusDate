@@ -15,8 +15,6 @@ namespace VSNamePlusDate
     [Command(PackageIds.NamePlusDateCommand)]
     internal sealed class NamePlusDateCommand : BaseCommand<NamePlusDateCommand>
     {
-
-        
         protected override async Task ExecuteAsync(OleMenuCmdEventArgs e)
         {
             await ThreadHelper.JoinableTaskFactory.SwitchToMainThreadAsync();
