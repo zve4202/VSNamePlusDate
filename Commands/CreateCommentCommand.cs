@@ -11,10 +11,12 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Forms;
+using WindowEvents = EnvDTE.WindowEvents;
+
 
 namespace VSExtension;
 
-[Command(PackageIds.NamePlusDateCommand)]
+[Command(PackageIds.CreateCommentCommand)]
 internal sealed class CreateCommentCommand : BaseCommand<CreateCommentCommand>
 {
     private static WindowEvents? _windowEvents;
